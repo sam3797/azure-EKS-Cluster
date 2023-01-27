@@ -2,6 +2,7 @@ data "terraform_remote_state" "eks" {
   backend = "s3"
 
   config = {
+      profile = "default"
       region = "us-east-1"
       bucket = "statefiles-terraform-github"
       key    = "eks.tfstate"
