@@ -68,6 +68,11 @@ jobs:
         with:
            name: terraform_plan_result
            path: "./terraform/eks"
+           
+      - name: Terraform Apply
+        #if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply "tfplan"
+        working-directory: "./terraform/eks"
 
       - name: testing the connection
         #if: github.ref == 'refs/heads/main' && github.event_name == 'push'
