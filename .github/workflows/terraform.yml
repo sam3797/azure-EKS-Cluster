@@ -48,24 +48,13 @@ jobs:
           aws-access-key-id: ${{env.AWS_ACCESS_KEY_ID}}
           aws-secret-access-key: ${{env.AWS_SECRET_ACCESS_KEY}}
           aws-region: ${{env.AWS_DEFAULT_REGION}}
-
-      - name: testing the connection
-        #if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: |
-          aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name my-eks-cluster
-          kubectl get nodes
-          kubectl get deployments -A
-          kubectl get services -A
-          kubectl get pods -A
-          kubectl get ingress -A
-
+          
   terraform-apply-eks:
     name: "Terraform-Apply-eks"
     needs: [Terraform-plan-eks]
     environment:
       name: Prod
     runs-on: ubuntu-latest
-
     
     steps:
       - name: Checkout
@@ -91,3 +80,13 @@ jobs:
         #if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply "tfplan"
         working-directory: "./terraform/eks"
+        
+      - name: testing the connection
+        #if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+         aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name my-eks-cluster
+         kubectl get nodes
+         kubectl get deployments -A
+         kubectl get services -A
+         kubectl get pods -A
+         kubectl get ingress -A
