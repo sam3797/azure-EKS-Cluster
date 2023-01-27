@@ -34,6 +34,11 @@ resource "aws_iam_role_policy_attachment" "eks-policy" {
  role    = aws_iam_role.eks-iam-role.name
 }
 
+resource "aws_iam_role_policy_attachment" "eks-policy" {
+ policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+ role    = aws_iam_role.eks-iam-role.name
+}
+
 resource "aws_iam_role" "worker-nodes-role" {
   name = "worker-nodes-role"
  
