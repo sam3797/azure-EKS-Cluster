@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "my-bucket" {
-  bucket = "statefiles-terraform-github"
+  bucket = "statefiles-terraform-github-1234"
 }
 
 resource "aws_s3_bucket_acl" "my-bucket-acl" {
