@@ -1,0 +1,93 @@
+name: "terraform-deploy"
+
+on:
+  push:
+    branches:
+      - master
+env:
+  AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_DEFAULT_REGION: "us-east-1"
+
+jobs:
+
+  terraform-plan-eks:
+    name: "Terraform-Plan-eks"
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        id: init
+        run: |
+            #rm -rf .terraform
+            terraform init
+        working-directory: "./terraform/eks"
+
+      - name: Terraform Plan
+        id: plan
+        #if: github.event_name == 'push'
+        run: terraform plan -out="tfplan"
+        working-directory: "./terraform/eks"
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v2.2.2
+        with:
+        # Artifact name
+          name:  terraform_plan_result #.zip will be added automatically
+          path: ./terraform/eks/tfplan
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{env.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{env.AWS_SECRET_ACCESS_KEY}}
+          aws-region: ${{env.AWS_DEFAULT_REGION}}
+
+      - name: testing the connection
+        #if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name my-eks-cluster
+          kubectl get nodes
+          kubectl get deployments -A
+          kubectl get services -A
+          kubectl get pods -A
+          kubectl get ingress -A
+
+  terraform-apply-eks:
+    name: "Terraform-Apply-eks"
+    needs: [Terraform-plan-eks]
+    environment:
+      name: Prod
+    runs-on: ubuntu-latest
+
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Download the plan artifcats
+        uses: actions/download-artifact@v2
+        with:
+           name: terraform_plan_result
+           path: "./terraform/eks"
+
+      - name: Terraform Init
+        id: init
+        run: |
+            #rm -rf .terraform
+            terraform init
+        working-directory: "./terraform/eks"
+
+      - name: Terraform Apply
+        #if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply "tfplan"
+        working-directory: "./terraform/eks"
