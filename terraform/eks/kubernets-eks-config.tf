@@ -4,7 +4,7 @@ data "terraform_remote_state" "eks" {
   config = {
       profile = "default"
       region = "us-east-1"
-      bucket = "statefiles-terraform-github-123"
+      bucket = "statefiles-terraform-github-1234"
       key    = "eks.tfstate"
   }
 }
